@@ -1,3 +1,5 @@
+import sqlite3 from "better-sqlite3";
+import { Database } from "better-sqlite3";
 import { 
   User, InsertUser, 
   ShoppingList, InsertShoppingList, 
@@ -11,236 +13,212 @@ const MemoryStore = createMemoryStore(session);
 type SessionStore = ReturnType<typeof createMemoryStore>;
 
 export interface IStorage {
-  // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
-  
-  // Lists
   getListById(id: number): Promise<ShoppingList | undefined>;
   getUserLists(userId: number): Promise<ShoppingList[]>;
   createList(list: InsertShoppingList): Promise<ShoppingList>;
   updateList(id: number, data: Partial<ShoppingList>): Promise<ShoppingList>;
   deleteList(id: number): Promise<void>;
   canUserAccessList(userId: number, listId: number): Promise<boolean>;
-  
-  // List Items
   getListItems(listId: number): Promise<ListItem[]>;
   createListItem(item: InsertListItem): Promise<ListItem>;
   updateListItem(id: number, data: Partial<ListItem>): Promise<ListItem>;
   deleteListItem(id: number): Promise<void>;
-  
-  // List Participants
   getListParticipants(listId: number): Promise<User[]>;
   isListSharedWithUser(listId: number, userId: number): Promise<boolean>;
   addListParticipant(participant: InsertListParticipant): Promise<ListParticipant>;
   removeListParticipant(id: number): Promise<void>;
-  
-  // Session
   sessionStore: SessionStore;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private lists: Map<number, ShoppingList>;
-  private items: Map<number, ListItem>;
-  private participants: Map<number, ListParticipant>;
+export class SQLiteStorage implements IStorage {
+  private db: Database;
   sessionStore: SessionStore;
-  
-  private userIdCounter: number;
-  private listIdCounter: number;
-  private itemIdCounter: number;
-  private participantIdCounter: number;
 
-  constructor() {
-    this.users = new Map();
-    this.lists = new Map();
-    this.items = new Map();
-    this.participants = new Map();
-    
-    this.userIdCounter = 1;
-    this.listIdCounter = 1;
-    this.itemIdCounter = 1;
-    this.participantIdCounter = 1;
-    
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000 // 24 hours
-    });
+  constructor(dbPath: string = "./data.db") {
+    this.db = sqlite3(dbPath);
+    this.sessionStore = new MemoryStore({ checkPeriod: 86400000 });
+    this.initializeDatabase();
+  }
+
+  private initializeDatabase() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        avatarUrl TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS shopping_lists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        datePlanned TEXT,
+        ownerId INTEGER NOT NULL,
+        color TEXT DEFAULT 'bg-green-500'
+      );
+
+      CREATE TABLE IF NOT EXISTS list_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        quantity INTEGER NOT NULL DEFAULT 1,
+        unit TEXT,
+        category TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        listId INTEGER NOT NULL,
+        color TEXT DEFAULT 'bg-green-500'
+      );
+
+      CREATE TABLE IF NOT EXISTS list_participants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listId INTEGER NOT NULL,
+        userId INTEGER NOT NULL,
+        UNIQUE(listId, userId)
+      );
+    `);
   }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const row = this.db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+    return row as User | undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const row = this.db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+    return row as User | undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const row = this.db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+    return row as User | undefined;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const user: User = { ...userData, id };
-    this.users.set(id, user);
-    return user;
+    const stmt = this.db.prepare(
+      "INSERT INTO users (username, password, name, email, avatarUrl) VALUES (?, ?, ?, ?, ?)"
+    );
+    const info = stmt.run(userData.username, userData.password, userData.name, userData.email, userData.avatarUrl);
+    return { ...userData, id: Number(info.lastInsertRowid) };
   }
-  
+
   async updateUser(id: number, data: Partial<User>): Promise<User> {
-    const user = this.users.get(id);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    
-    const updatedUser = { ...user, ...data };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const updates = Object.entries(data).map(([key]) => `${key} = ?`).join(", ");
+    const values = Object.values(data);
+    this.db.prepare(`UPDATE users SET ${updates} WHERE id = ?`).run(...values, id);
+    return (await this.getUser(id))!;
   }
 
   // Shopping List methods
   async getListById(id: number): Promise<ShoppingList | undefined> {
-    return this.lists.get(id);
+    const row = this.db.prepare("SELECT * FROM shopping_lists WHERE id = ?").get(id);
+    return row as ShoppingList | undefined;
   }
 
   async getUserLists(userId: number): Promise<ShoppingList[]> {
-    // Get lists owned by user
-    const ownedLists = Array.from(this.lists.values()).filter(
-      list => list.ownerId === userId
-    );
-    
-    // Get lists shared with user
-    const participatedListIds = Array.from(this.participants.values())
-      .filter(p => p.userId === userId)
-      .map(p => p.listId);
-    
-    const participatedLists = Array.from(this.lists.values()).filter(
-      list => participatedListIds.includes(list.id)
-    );
-    
-    // Combine both types of lists
-    return [...ownedLists, ...participatedLists];
+    const ownedLists = this.db.prepare("SELECT * FROM shopping_lists WHERE ownerId = ?").all(userId);
+    const participantLists = this.db.prepare(`
+      SELECT sl.* FROM shopping_lists sl
+      JOIN list_participants lp ON sl.id = lp.listId
+      WHERE lp.userId = ?
+    `).all(userId);
+    return [...ownedLists, ...participantLists] as ShoppingList[];
   }
 
   async createList(listData: InsertShoppingList): Promise<ShoppingList> {
-    const id = this.listIdCounter++;
-    const list: ShoppingList = { ...listData, id };
-    this.lists.set(id, list);
-    return list;
+    const stmt = this.db.prepare(
+      "INSERT INTO shopping_lists (name, description, datePlanned, ownerId, color) VALUES (?, ?, ?, ?, ?)"
+    );
+    const info = stmt.run(listData.name, listData.description, listData.datePlanned, listData.ownerId, listData.color);
+    return { ...listData, id: Number(info.lastInsertRowid) };
   }
 
   async updateList(id: number, data: Partial<ShoppingList>): Promise<ShoppingList> {
-    const list = this.lists.get(id);
-    if (!list) {
-      throw new Error("List not found");
-    }
-    
-    const updatedList = { ...list, ...data };
-    this.lists.set(id, updatedList);
-    return updatedList;
+    const updates = Object.entries(data).map(([key]) => `${key} = ?`).join(", ");
+    const values = Object.values(data);
+    this.db.prepare(`UPDATE shopping_lists SET ${updates} WHERE id = ?`).run(...values, id);
+    return (await this.getListById(id))!;
   }
 
   async deleteList(id: number): Promise<void> {
-    // Delete list
-    this.lists.delete(id);
-    
-    // Delete all items from this list
-    const itemIds = Array.from(this.items.values())
-      .filter(item => item.listId === id)
-      .map(item => item.id);
-    
-    for (const itemId of itemIds) {
-      this.items.delete(itemId);
-    }
-    
-    // Delete all participants of this list
-    const participantIds = Array.from(this.participants.values())
-      .filter(p => p.listId === id)
-      .map(p => p.id);
-    
-    for (const participantId of participantIds) {
-      this.participants.delete(participantId);
-    }
+    this.db.prepare("DELETE FROM shopping_lists WHERE id = ?").run(id);
+    this.db.prepare("DELETE FROM list_items WHERE listId = ?").run(id);
+    this.db.prepare("DELETE FROM list_participants WHERE listId = ?").run(id);
   }
 
   async canUserAccessList(userId: number, listId: number): Promise<boolean> {
     const list = await this.getListById(listId);
     if (!list) return false;
-    
-    // User is the owner
     if (list.ownerId === userId) return true;
-    
-    // Check if user is a participant
-    const isParticipant = Array.from(this.participants.values()).some(
-      p => p.listId === listId && p.userId === userId
-    );
-    
-    return isParticipant;
+    const participant = this.db.prepare("SELECT 1 FROM list_participants WHERE listId = ? AND userId = ?").get(listId, userId);
+    return !!participant;
   }
 
   // List Items methods
   async getListItems(listId: number): Promise<ListItem[]> {
-    return Array.from(this.items.values()).filter(item => item.listId === listId);
+    return this.db.prepare("SELECT * FROM list_items WHERE listId = ?").all(listId) as ListItem[];
   }
 
   async createListItem(itemData: InsertListItem): Promise<ListItem> {
-    const id = this.itemIdCounter++;
-    const item: ListItem = { ...itemData, id };
-    this.items.set(id, item);
-    return item;
+    const stmt = this.db.prepare(
+      "INSERT INTO list_items (name, quantity, unit, category, status, listId, color) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    const info = stmt.run(
+      itemData.name,
+      itemData.quantity,
+      itemData.unit,
+      itemData.category,
+      itemData.status,
+      itemData.listId,
+      itemData.color
+    );
+    return { ...itemData, id: Number(info.lastInsertRowid) };
   }
 
   async updateListItem(id: number, data: Partial<ListItem>): Promise<ListItem> {
-    const item = this.items.get(id);
-    if (!item) {
-      throw new Error("Item not found");
-    }
-    
-    const updatedItem = { ...item, ...data };
-    this.items.set(id, updatedItem);
-    return updatedItem;
+    const updates = Object.entries(data).map(([key]) => `${key} = ?`).join(", ");
+    const values = Object.values(data);
+    this.db.prepare(`UPDATE list_items SET ${updates} WHERE id = ?`).run(...values, id);
+    return (await this.getListItems(id))[0] as ListItem;
   }
 
   async deleteListItem(id: number): Promise<void> {
-    this.items.delete(id);
+    this.db.prepare("DELETE FROM list_items WHERE id = ?").run(id);
   }
 
   // List Participants methods
   async getListParticipants(listId: number): Promise<User[]> {
-    const participantUserIds = Array.from(this.participants.values())
-      .filter(p => p.listId === listId)
-      .map(p => p.userId);
-    
-    const participantUsers = [];
-    for (const userId of participantUserIds) {
-      const user = await this.getUser(userId);
-      if (user) {
-        participantUsers.push(user);
-      }
-    }
-    
-    return participantUsers;
+    const participants = this.db.prepare(`
+      SELECT u.* FROM users u
+      JOIN list_participants lp ON u.id = lp.userId
+      WHERE lp.listId = ?
+    `).all(listId);
+    return participants as User[];
   }
 
   async isListSharedWithUser(listId: number, userId: number): Promise<boolean> {
-    return Array.from(this.participants.values()).some(
-      p => p.listId === listId && p.userId === userId
-    );
+    const row = this.db.prepare("SELECT 1 FROM list_participants WHERE listId = ? AND userId = ?").get(listId, userId);
+    return !!row;
   }
 
   async addListParticipant(participantData: InsertListParticipant): Promise<ListParticipant> {
-    const id = this.participantIdCounter++;
-    const participant: ListParticipant = { ...participantData, id };
-    this.participants.set(id, participant);
-    return participant;
+    const stmt = this.db.prepare(
+      "INSERT INTO list_participants (listId, userId) VALUES (?, ?)"
+    );
+    const info = stmt.run(participantData.listId, participantData.userId);
+    return { ...participantData, id: Number(info.lastInsertRowid) };
   }
 
   async removeListParticipant(id: number): Promise<void> {
-    this.participants.delete(id);
+    this.db.prepare("DELETE FROM list_participants WHERE id = ?").run(id);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new SQLiteStorage();

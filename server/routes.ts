@@ -40,6 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownerId: userId
       });
       
+      
       const newList = await storage.createList(listData);
       res.status(201).json(newList);
     } catch (error) {
