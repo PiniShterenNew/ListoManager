@@ -31,11 +31,28 @@
   [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
   }
+  
+  /* טיפוגרפיה */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-3xl sm:text-4xl leading-tight;
+  }
+  
+  h2 {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  h3 {
+    @apply text-xl sm:text-2xl;
+  }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6;
+    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100;
   }
   
   .page-container {
@@ -47,7 +64,10 @@
   }
   
   .mobile-friendly-button {
-    @apply min-h-[44px] px-4 flex items-center justify-center;
+    @apply min-h-[44px] px-4 flex items-center justify-center font-medium
+           bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/75
+           text-white shadow-sm hover:shadow transition-all duration-200
+           active:scale-[0.98];
   }
   
   .item-row {
@@ -56,6 +76,54 @@
   }
   
   .mobile-menu {
-    @apply fixed bottom-0 left-0 right-0 bg-white shadow-lg rounded-t-xl p-3 z-50 md:hidden;
+    @apply fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.05)] 
+           rounded-t-xl p-3 z-50 md:hidden;
+  }
+  
+  /* מספר קטן של פריט במסך נייד */
+  .quantity-badge {
+    @apply inline-flex items-center justify-center h-6 min-w-6 px-1.5
+           text-xs font-medium rounded-full bg-primary/10 text-primary;
+  }
+  
+  /* כפתור קטגוריה */
+  .category-button {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+           text-xs font-medium bg-muted/50 hover:bg-muted/80 transition-colors;
+  }
+  
+  /* הנפשות */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+  
+  /* כרטיס עם אפקט זוהר */
+  .glow-card {
+    @apply relative overflow-hidden;
+  }
+  
+  .glow-card::after {
+    @apply content-[''] absolute -inset-[150%] w-[200%] h-[200%] rotate-45
+           bg-gradient-to-r from-transparent via-primary/10 to-transparent
+           opacity-0 transition-opacity duration-700;
+  }
+  
+  .glow-card:hover::after {
+    @apply opacity-100 animate-[shine_1.5s_ease_forwards];
+  }
+  
+  @keyframes shine {
+    100% {
+      transform: rotate(45deg) translate(100%, 100%);
+    }
+  }
+  
+  @keyframes flow {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 50px 0;
+    }
   }
 }
