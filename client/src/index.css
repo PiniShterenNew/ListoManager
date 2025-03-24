@@ -8,45 +8,48 @@
   }
 
   body {
-    @apply font-sans antialiased bg-slate-50 text-foreground;
+    @apply font-sans antialiased bg-background text-foreground min-h-screen;
     direction: rtl;
   }
-  
+
   input, textarea {
     text-align: right;
   }
-  
+
   [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
   }
-  
+
   [dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
   }
-  
+
   [dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
   }
-  
+
   [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
   }
-  
+
   /* טיפוגרפיה */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
-  
+
   h1 {
     @apply text-3xl sm:text-4xl leading-tight;
   }
-  
+
   h2 {
     @apply text-2xl sm:text-3xl;
   }
-  
+
   h3 {
     @apply text-xl sm:text-2xl;
+  }
+  .list-header {
+    @apply text-xl font-medium mb-4 text-right w-full;
   }
 }
 
@@ -54,70 +57,70 @@
   .card {
     @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100;
   }
-  
+
   .page-container {
     @apply max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8;
   }
-  
+
   .grid-layout {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
   }
-  
+
   .mobile-friendly-button {
     @apply min-h-[44px] px-4 flex items-center justify-center font-medium
            bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/75
            text-white shadow-sm hover:shadow transition-all duration-200
            active:scale-[0.98];
   }
-  
+
   .item-row {
     @apply flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 sm:p-4 bg-white rounded-lg 
            shadow-sm hover:shadow transition-all border border-transparent hover:border-primary/10;
   }
-  
+
   .mobile-menu {
     @apply fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.05)] 
            rounded-t-xl p-3 z-50 md:hidden;
   }
-  
+
   /* מספר קטן של פריט במסך נייד */
   .quantity-badge {
     @apply inline-flex items-center justify-center h-6 min-w-6 px-1.5
            text-xs font-medium rounded-full bg-primary/10 text-primary;
   }
-  
+
   /* כפתור קטגוריה */
   .category-button {
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
            text-xs font-medium bg-muted/50 hover:bg-muted/80 transition-colors;
   }
-  
+
   /* הנפשות */
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-1;
   }
-  
+
   /* כרטיס עם אפקט זוהר */
   .glow-card {
     @apply relative overflow-hidden;
   }
-  
+
   .glow-card::after {
     @apply content-[''] absolute -inset-[150%] w-[200%] h-[200%] rotate-45
            bg-gradient-to-r from-transparent via-primary/10 to-transparent
            opacity-0 transition-opacity duration-700;
   }
-  
+
   .glow-card:hover::after {
     @apply opacity-100 animate-[shine_1.5s_ease_forwards];
   }
-  
+
   @keyframes shine {
     100% {
       transform: rotate(45deg) translate(100%, 100%);
     }
   }
-  
+
   @keyframes flow {
     0% {
       background-position: 0 0;
@@ -126,7 +129,7 @@
       background-position: 50px 0;
     }
   }
-  
+
   @keyframes checkmark {
     0% {
       transform: scale(0);
@@ -140,5 +143,35 @@
       transform: scale(1);
       opacity: 1;
     }
+  }
+
+  .back-button {
+    @apply absolute left-4 top-4 p-2 rounded-full hover:bg-muted/50 transition-colors;
+  }
+
+  .settings-button {
+    @apply fixed bottom-4 right-4 p-3 rounded-full bg-primary text-white shadow-lg 
+           hover:bg-primary/90 transition-all md:static md:bottom-auto md:right-auto;
+  }
+
+  .auth-container {
+    @apply flex flex-col items-center justify-center min-h-[60vh] w-full max-w-sm mx-auto;
+  }
+
+  .auth-button {
+    @apply w-full justify-center mobile-friendly-button mt-4;
+  }
+
+  .notification {
+    @apply fixed top-4 right-4 p-4 rounded-lg shadow-lg bg-white border-l-4 
+           transform transition-transform duration-300 animate-in fade-in slide-in-from-top-5;
+  }
+
+  .mobile-header {
+    @apply sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+
+  .mobile-nav {
+    @apply flex items-center justify-between px-4 h-14;
   }
 }
