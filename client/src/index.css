@@ -56,8 +56,15 @@
     direction: rtl;
   }
 
-  input, textarea {
+  input, textarea, .logo {
     text-align: right;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 
   [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) {
