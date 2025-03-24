@@ -136,7 +136,7 @@ export default function ListDetailPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container max-w-4xl mx-auto py-6 px-4"> {/*This line was changed*/}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <Button 
