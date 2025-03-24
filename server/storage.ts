@@ -8,6 +8,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 
 const MemoryStore = createMemoryStore(session);
+type SessionStore = ReturnType<typeof createMemoryStore>;
 
 export interface IStorage {
   // Users
@@ -38,7 +39,7 @@ export interface IStorage {
   removeListParticipant(id: number): Promise<void>;
   
   // Session
-  sessionStore: session.SessionStore;
+  sessionStore: SessionStore;
 }
 
 export class MemStorage implements IStorage {
@@ -46,7 +47,7 @@ export class MemStorage implements IStorage {
   private lists: Map<number, ShoppingList>;
   private items: Map<number, ListItem>;
   private participants: Map<number, ListParticipant>;
-  sessionStore: session.SessionStore;
+  sessionStore: SessionStore;
   
   private userIdCounter: number;
   private listIdCounter: number;
