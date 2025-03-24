@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Redirect, Route, useLocation } from "wouter";
+import { Route, useLocation } from "wouter";
 
 export function ProtectedRoute({
   path,
@@ -24,8 +24,13 @@ export function ProtectedRoute({
         }
 
         if (!user) {
-          setLocation("/auth");
-          return null;
+          // redirect to auth page
+          setTimeout(() => setLocation("/auth"), 10);
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          );
         }
 
         return <Component />;

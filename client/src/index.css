@@ -9,5 +9,26 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    direction: rtl;
+  }
+  
+  input, textarea {
+    text-align: right;
+  }
+  
+  [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1 !important;
+  }
+  
+  [dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1 !important;
+  }
+  
+  [dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1 !important;
+  }
+  
+  [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1 !important;
   }
 }

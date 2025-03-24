@@ -1,12 +1,50 @@
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import NavBar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
+import ImageUpload from "@/components/ui/image-upload";
 
 export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (avatarUrl: string) => {
+      if (!user) throw new Error("User not authenticated");
+      
+      const response = await apiRequest("PUT", `/api/users/${user.id}`, {
+        avatarUrl
+      });
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({
+        title: "תמונת פרופיל עודכנה",
+        description: "התמונה עודכנה בהצלחה",
+      });
+      setIsEditing(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "שגיאה בעדכון תמונה",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleLogout = () => {
     logoutMutation.mutate();
+  };
+
+  const handleImageChange = (imageBase64: string) => {
+    updateAvatarMutation.mutate(imageBase64);
   };
 
   if (!user) return null;
@@ -43,22 +81,45 @@ export default function ProfilePage() {
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">תמונת פרופיל</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  <div className="flex items-center">
-                    {user.avatarUrl ? (
-                      <img 
-                        className="h-16 w-16 rounded-full object-cover" 
-                        src={user.avatarUrl} 
-                        alt={user.name} 
+                  {isEditing ? (
+                    <div className="flex flex-col">
+                      <ImageUpload 
+                        currentImage={user.avatarUrl} 
+                        onImageChange={handleImageChange}
                       />
-                    ) : (
-                      <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-semibold">
-                        {user.name.charAt(0)}
+                      
+                      <div className="flex gap-2 mt-4">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsEditing(false)}
+                          disabled={updateAvatarMutation.isPending}
+                        >
+                          ביטול
+                        </Button>
                       </div>
-                    )}
-                    <Button variant="outline" className="mr-4">
-                      שנה תמונה
-                    </Button>
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      {user.avatarUrl ? (
+                        <img 
+                          className="h-16 w-16 rounded-full object-cover" 
+                          src={user.avatarUrl} 
+                          alt={user.name} 
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-semibold">
+                          {user.name.charAt(0)}
+                        </div>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        className="mr-4"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        שנה תמונה
+                      </Button>
+                    </div>
+                  )}
                 </dd>
               </div>
             </dl>

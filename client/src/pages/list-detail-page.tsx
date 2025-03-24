@@ -17,7 +17,8 @@ import {
   Edit, 
   Share2, 
   Trash2,
-  Loader2
+  Loader2,
+  Plus
 } from "lucide-react";
 import {
   AlertDialog,
@@ -40,7 +41,7 @@ export default function ListDetailPage() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const listId = parseInt(id);
+  const listId = parseInt(id || "0");
 
   // Fetch list details
   const { data: list, isLoading: isLoadingList } = useQuery<ShoppingList>({
