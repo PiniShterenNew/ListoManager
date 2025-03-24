@@ -41,17 +41,6 @@ interface ItemRowProps {
   listId: number;
 }
 
-// Category to emoji mapping
-const categoryEmojis: Record<string, string> = {
-  dairy: "🥛",
-  fruits: "🍎",
-  vegetables: "🥦",
-  meat: "🥩",
-  bread: "🍞",
-  cleaning: "🧹",
-  other: "📦",
-};
-
 const formSchema = z.object({
   name: z.string().min(2, { message: "שם הפריט חייב להכיל לפחות 2 תווים" }),
   quantity: z.coerce.number().int().positive({ message: "הכמות חייבת להיות מספר חיובי" }),
@@ -158,7 +147,9 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
 
   const isPurchased = item.status === "purchased";
   const categoryKey = item.category as keyof typeof PRODUCT_CATEGORIES || "OTHER";
-  const emoji = item.category && PRODUCT_CATEGORIES[categoryKey] ? PRODUCT_CATEGORIES[categoryKey].icon : "📦";
+  const Icon = PRODUCT_CATEGORIES[categoryKey]?.icon || PRODUCT_CATEGORIES.OTHER.icon;
+  const emoji = <Icon className="h-
+  5 w-5" />;
 
   return (
     <>
@@ -191,7 +182,7 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/30"></span>
             {item.category && PRODUCT_CATEGORIES[categoryKey] 
               ? PRODUCT_CATEGORIES[categoryKey].name 
-              : "אחר"}
+              : PRODUCT_CATEGORIES.OTHER.name}
           </div>
         </div>
         
@@ -199,11 +190,11 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
           isPurchased ? "line-through bg-green-50 text-green-600" : ""
         }`}>
           {item.quantity} {item.unit === "units" ? "יחידות" :
-              item.unit === "kg" ? "ק״ג" :
-              item.unit === "g" ? "גרם" :
-              item.unit === "l" ? "ליטר" :
-              item.unit === "ml" ? "מ״ל" :
-              item.unit === "pack" ? "חבילה" : ""}
+            item.unit === "kg" ? "ק״ג" :
+            item.unit === "g" ? "גרם" :
+            item.unit === "l" ? "ליטר" :
+            item.unit === "ml" ? "מ״ל" :
+            item.unit === "pack" ? "חבילה" : ""}
         </div>
         
         <div className="flex gap-1 sm:gap-1 items-center">
@@ -329,7 +320,7 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                         {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
                           <SelectItem key={key} value={key} className="h-9">
                             <div className="flex items-center gap-2">
-                              <span className="text-lg">{value.icon}</span> 
+                              <span className="text-lg">{String(value.icon)}</span> 
                               <span>{value.name}</span>
                             </div>
                           </SelectItem>
@@ -370,7 +361,7 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
             <AlertDialogTitle className="text-xl">מחיקת פריט</AlertDialogTitle>
             <AlertDialogDescription className="mt-2">
               <div className="bg-red-50 border border-red-100 rounded-lg p-4 text-sm flex flex-col items-center gap-2 my-2">
-                <div className="text-3xl mb-1">{emoji}</div>
+                <div className="text-3xl mb-1">{emoji as React.ReactNode}</div>
                 <div className="font-medium text-base text-foreground">{item.name}</div>
                 <div className="text-muted-foreground text-center">
                   האם אתה בטוח שברצונך למחוק פריט זה מהרשימה? פעולה זו לא ניתנת לביטול.

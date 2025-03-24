@@ -171,7 +171,7 @@ export default function ItemForm({ listId }: ItemFormProps) {
                         {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
                           <SelectItem key={key} value={key} className="h-9">
                             <div className="flex items-center gap-2">
-                              <span className="text-lg">{value.icon}</span> 
+                              <span className="text-lg">{value.icon && <value.icon />}</span> 
                               <span>{value.name}</span>
                             </div>
                           </SelectItem>
