@@ -78,7 +78,16 @@ export default function ItemForm({ listId }: ItemFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8">
-        <div className="card mb-4">
+        <div className="card mb-4 relative bg-white/90 backdrop-blur-sm">
+          <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-t-lg"></div>
+          
+          <div className="flex items-center mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mr-3">
+              <Plus className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-lg font-medium">הוסף פריט חדש</h3>
+          </div>
+          
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <FormField
@@ -89,7 +98,7 @@ export default function ItemForm({ listId }: ItemFormProps) {
                     <FormControl>
                       <Input 
                         placeholder="הוסף פריט חדש, לדוג׳: חלב"
-                        className="min-h-[44px]"
+                        className="min-h-[44px] border-primary/20 focus:border-primary"
                         {...field} 
                       />
                     </FormControl>
@@ -107,7 +116,7 @@ export default function ItemForm({ listId }: ItemFormProps) {
                         type="number" 
                         placeholder="כמות" 
                         min="1"
-                        className="min-h-[44px]"
+                        className="min-h-[44px] border-primary/20 focus:border-primary"
                         {...field} 
                       />
                     </FormControl>
@@ -127,7 +136,7 @@ export default function ItemForm({ listId }: ItemFormProps) {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="min-h-[44px]">
+                        <SelectTrigger className="min-h-[44px] border-primary/20 focus:border-primary">
                           <SelectValue placeholder="יחידה" />
                         </SelectTrigger>
                       </FormControl>
@@ -154,14 +163,17 @@ export default function ItemForm({ listId }: ItemFormProps) {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="min-h-[44px]">
+                        <SelectTrigger className="min-h-[44px] border-primary/20 focus:border-primary">
                           <SelectValue placeholder="קטגוריה" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value.name} {value.icon}
+                          <SelectItem key={key} value={key} className="h-9">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{value.icon}</span> 
+                              <span>{value.name}</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -171,14 +183,14 @@ export default function ItemForm({ listId }: ItemFormProps) {
               />
             </div>
             
-            <div className="flex justify-end">
+            <div className="pt-2">
               <Button 
                 type="submit"
                 disabled={addItemMutation.isPending}
-                className="mobile-friendly-button w-full sm:w-auto"
+                className="mobile-friendly-button w-full md:w-auto"
               >
                 <Plus className="ml-1.5 h-4 w-4" />
-                הוסף פריט
+                {addItemMutation.isPending ? "מוסיף פריט..." : "הוסף פריט"}
               </Button>
             </div>
           </div>

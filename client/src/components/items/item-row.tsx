@@ -162,35 +162,42 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
 
   return (
     <>
-      <div className={`item-row ${isPurchased ? "opacity-70" : ""}`}>
+      <div className={`item-row ${isPurchased ? "opacity-75 bg-muted/20" : ""}`}>
         <button 
           type="button" 
           onClick={handleToggleStatus}
-          className={`flex-shrink-0 h-6 w-6 rounded-full min-w-[24px] ${
+          className={`flex-shrink-0 h-7 w-7 rounded-full min-w-[28px] transition-all duration-200 ${
             isPurchased 
-              ? "bg-primary border-2 border-primary text-white flex items-center justify-center" 
-              : "border-2 border-gray-300 hover:border-primary"
+              ? "bg-gradient-to-r from-primary to-primary/85 border border-primary text-white flex items-center justify-center shadow-sm" 
+              : "border-2 border-gray-200 hover:border-primary hover:scale-110"
           }`}
         >
           {isPurchased && (
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="animate-[checkmark_0.4s_ease-in-out]">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           )}
         </button>
         
-        <div className="flex-shrink-0 text-2xl min-w-[2rem] text-center">{emoji}</div>
+        <div className="flex-shrink-0 text-2xl min-w-[2.5rem] flex items-center justify-center bg-muted/40 rounded-md h-10 w-10">
+          <span className="transform hover:scale-110 transition-transform duration-200">{emoji}</span>
+        </div>
         
-        <div className="flex-grow min-w-0">
-          <div className={`font-medium truncate ${isPurchased ? "line-through" : ""}`}>{item.name}</div>
-          <div className="text-xs text-gray-500 truncate">
+        <div className="flex-grow min-w-0 mr-2">
+          <div className={`font-medium truncate text-[15px] ${isPurchased ? "line-through text-muted-foreground" : ""}`}>
+            {item.name}
+          </div>
+          <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/30"></span>
             {item.category && PRODUCT_CATEGORIES[categoryKey] 
               ? PRODUCT_CATEGORIES[categoryKey].name 
               : "אחר"}
           </div>
         </div>
         
-        <div className={`text-sm font-medium px-2 py-1 bg-gray-50 rounded-md whitespace-nowrap mx-2 ${isPurchased ? "line-through" : ""}`}>
+        <div className={`quantity-badge px-3 whitespace-nowrap mx-2 ${
+          isPurchased ? "line-through bg-green-50 text-green-600" : ""
+        }`}>
           {item.quantity} {item.unit === "units" ? "יחידות" :
               item.unit === "kg" ? "ק״ג" :
               item.unit === "g" ? "גרם" :
@@ -199,7 +206,7 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
               item.unit === "pack" ? "חבילה" : ""}
         </div>
         
-        <div className="flex gap-1 sm:gap-2 items-center">
+        <div className="flex gap-1 sm:gap-1 items-center">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -207,9 +214,9 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
               e.stopPropagation();
               setIsEditDialogOpen(true);
             }}
-            className="text-gray-400 hover:text-foreground hover:bg-transparent h-8 w-8 sm:h-9 sm:w-9"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8 w-8 rounded-full"
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-3.5 w-3.5" />
           </Button>
           <Button 
             variant="ghost" 
@@ -218,9 +225,9 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
               e.stopPropagation();
               setIsDeleteDialogOpen(true);
             }}
-            className="text-gray-400 hover:text-red-500 hover:bg-transparent h-8 w-8 sm:h-9 sm:w-9"
+            className="text-muted-foreground hover:text-red-500 hover:bg-red-50 h-8 w-8 rounded-full"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -229,18 +236,24 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>עריכת פריט</DialogTitle>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <span className="text-2xl">{emoji}</span>
+              עריכת פריט
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              שנה את פרטי הפריט לפי הצורך
+            </p>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pt-2">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>שם הפריט</FormLabel>
+                    <FormLabel className="text-[15px]">שם הפריט</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} className="h-11" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,9 +266,14 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                   name="quantity"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>כמות</FormLabel>
+                      <FormLabel className="text-[15px]">כמות</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          {...field} 
+                          className="h-11"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -267,13 +285,13 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                   name="unit"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>יחידה</FormLabel>
+                      <FormLabel className="text-[15px]">יחידה</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="h-11">
                             <SelectValue placeholder="בחר יחידה" />
                           </SelectTrigger>
                         </FormControl>
@@ -297,20 +315,23 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>קטגוריה</FormLabel>
+                    <FormLabel className="text-[15px]">קטגוריה</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="בחר קטגוריה" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value.name} {value.icon}
+                          <SelectItem key={key} value={key} className="h-9">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{value.icon}</span> 
+                              <span>{value.name}</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -320,17 +341,19 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                 )}
               />
               
-              <DialogFooter className="mt-6">
+              <DialogFooter className="mt-8 gap-2">
                 <Button 
                   variant="outline" 
                   onClick={() => setIsEditDialogOpen(false)}
                   type="button"
+                  className="min-h-[44px]"
                 >
                   ביטול
                 </Button>
                 <Button 
                   type="submit"
                   disabled={updateItemMutation.isPending}
+                  className="min-h-[44px] mobile-friendly-button px-6"
                 >
                   {updateItemMutation.isPending ? "מעדכן..." : "עדכן פריט"}
                 </Button>
@@ -342,20 +365,28 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[400px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>מחיקת פריט</AlertDialogTitle>
-            <AlertDialogDescription>
-              האם אתה בטוח שברצונך למחוק את הפריט "{item.name}"? פעולה זו לא ניתנת לביטול.
+            <AlertDialogTitle className="text-xl">מחיקת פריט</AlertDialogTitle>
+            <AlertDialogDescription className="mt-2">
+              <div className="bg-red-50 border border-red-100 rounded-lg p-4 text-sm flex flex-col items-center gap-2 my-2">
+                <div className="text-3xl mb-1">{emoji}</div>
+                <div className="font-medium text-base text-foreground">{item.name}</div>
+                <div className="text-muted-foreground text-center">
+                  האם אתה בטוח שברצונך למחוק פריט זה מהרשימה? פעולה זו לא ניתנת לביטול.
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ביטול</AlertDialogCancel>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="min-h-[44px]">
+              ביטול
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 min-h-[44px] font-medium"
             >
-              מחק
+              {deleteItemMutation.isPending ? "מוחק..." : "מחק פריט"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
