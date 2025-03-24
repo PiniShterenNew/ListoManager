@@ -2,6 +2,22 @@ import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Product Categories with Icons
+export const PRODUCT_CATEGORIES = {
+  DAIRY: { name: "מוצרי חלב", icon: "🥛" },
+  FRUITS: { name: "פירות", icon: "🍎" },
+  VEGETABLES: { name: "ירקות", icon: "🥦" },
+  MEAT: { name: "בשר", icon: "🥩" },
+  BAKERY: { name: "מאפים ולחם", icon: "🍞" },
+  FROZEN: { name: "קפוא", icon: "🧊" },
+  CLEANING: { name: "ניקיון", icon: "🧹" },
+  CANNED: { name: "שימורים", icon: "🥫" },
+  DRINKS: { name: "משקאות", icon: "🥤" },
+  SNACKS: { name: "חטיפים", icon: "🍿" },
+  CONDIMENTS: { name: "רטבים ותבלינים", icon: "🧂" },
+  OTHER: { name: "אחר", icon: "📦" }
+};
+
 // User Schema
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),

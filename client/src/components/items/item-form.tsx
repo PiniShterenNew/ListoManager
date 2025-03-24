@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { PRODUCT_CATEGORIES } from "@shared/schema";
 
 interface ItemFormProps {
   listId: number;
@@ -152,13 +153,11 @@ export default function ItemForm({ listId }: ItemFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="dairy">מוצרי חלב 🥛</SelectItem>
-                    <SelectItem value="fruits">פירות 🍎</SelectItem>
-                    <SelectItem value="vegetables">ירקות 🥦</SelectItem>
-                    <SelectItem value="meat">בשר 🥩</SelectItem>
-                    <SelectItem value="bread">לחם 🍞</SelectItem>
-                    <SelectItem value="cleaning">ניקיון 🧹</SelectItem>
-                    <SelectItem value="other">אחר 📦</SelectItem>
+                    {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
+                      <SelectItem key={key} value={key}>
+                        {value.name} {value.icon}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FormItem>

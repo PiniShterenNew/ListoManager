@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ListItem } from "@shared/schema";
+import { ListItem, PRODUCT_CATEGORIES } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -157,7 +157,8 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
   };
 
   const isPurchased = item.status === "purchased";
-  const emoji = item.category ? categoryEmojis[item.category] || "📦" : "📦";
+  const categoryKey = item.category as keyof typeof PRODUCT_CATEGORIES || "OTHER";
+  const emoji = item.category && PRODUCT_CATEGORIES[categoryKey] ? PRODUCT_CATEGORIES[categoryKey].icon : "📦";
 
   return (
     <>
@@ -181,14 +182,9 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
         <div className="flex-grow">
           <div className={`font-medium ${isPurchased ? "line-through" : ""}`}>{item.name}</div>
           <div className="text-xs text-gray-500">
-            {item.category ? 
-              item.category === "dairy" ? "מוצרי חלב" :
-              item.category === "fruits" ? "פירות" :
-              item.category === "vegetables" ? "ירקות" :
-              item.category === "meat" ? "בשר" :
-              item.category === "bread" ? "לחם" :
-              item.category === "cleaning" ? "ניקיון" : "אחר"
-            : "אחר"}
+            {item.category && PRODUCT_CATEGORIES[categoryKey] 
+              ? PRODUCT_CATEGORIES[categoryKey].name 
+              : "אחר"}
           </div>
         </div>
         <div className={`text-sm font-medium ${isPurchased ? "line-through" : ""}`}>
@@ -302,13 +298,11 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="dairy">מוצרי חלב 🥛</SelectItem>
-                        <SelectItem value="fruits">פירות 🍎</SelectItem>
-                        <SelectItem value="vegetables">ירקות 🥦</SelectItem>
-                        <SelectItem value="meat">בשר 🥩</SelectItem>
-                        <SelectItem value="bread">לחם 🍞</SelectItem>
-                        <SelectItem value="cleaning">ניקיון 🧹</SelectItem>
-                        <SelectItem value="other">אחר 📦</SelectItem>
+                        {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value.name} {value.icon}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
