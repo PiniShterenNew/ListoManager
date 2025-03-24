@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-slate-50 text-foreground;
     direction: rtl;
   }
   
@@ -30,5 +30,32 @@
   
   [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1 !important;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6;
+  }
+  
+  .page-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8;
+  }
+  
+  .grid-layout {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .mobile-friendly-button {
+    @apply min-h-[44px] px-4 flex items-center justify-center;
+  }
+  
+  .item-row {
+    @apply flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 sm:p-4 bg-white rounded-lg 
+           shadow-sm hover:shadow transition-all border border-transparent hover:border-primary/10;
+  }
+  
+  .mobile-menu {
+    @apply fixed bottom-0 left-0 right-0 bg-white shadow-lg rounded-t-xl p-3 z-50 md:hidden;
   }
 }

@@ -78,99 +78,110 @@ export default function ItemForm({ listId }: ItemFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem className="flex-grow">
-                <FormControl>
-                  <Input 
-                    placeholder="הוסף פריט חדש, לדוג׳: חלב"
-                    {...field} 
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem className="w-full sm:w-24">
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="כמות" 
-                    min="1" 
-                    {...field} 
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="unit"
-            render={({ field }) => (
-              <FormItem className="w-full sm:w-32">
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="יחידה" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="units">יחידות</SelectItem>
-                    <SelectItem value="kg">ק״ג</SelectItem>
-                    <SelectItem value="g">גרם</SelectItem>
-                    <SelectItem value="l">ליטר</SelectItem>
-                    <SelectItem value="ml">מ״ל</SelectItem>
-                    <SelectItem value="pack">חבילה</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem className="w-full sm:w-40">
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="קטגוריה" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value.name} {value.icon}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
-          
-          <Button 
-            type="submit"
-            disabled={addItemMutation.isPending}
-          >
-            <Plus className="ml-1.5 h-4 w-4" />
-            הוסף
-          </Button>
+        <div className="card mb-4">
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormControl>
+                      <Input 
+                        placeholder="הוסף פריט חדש, לדוג׳: חלב"
+                        className="min-h-[44px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem className="w-full sm:w-24">
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="כמות" 
+                        min="1"
+                        className="min-h-[44px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem className="w-full sm:w-1/3">
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="min-h-[44px]">
+                          <SelectValue placeholder="יחידה" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="units">יחידות</SelectItem>
+                        <SelectItem value="kg">ק״ג</SelectItem>
+                        <SelectItem value="g">גרם</SelectItem>
+                        <SelectItem value="l">ליטר</SelectItem>
+                        <SelectItem value="ml">מ״ל</SelectItem>
+                        <SelectItem value="pack">חבילה</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem className="w-full sm:w-2/3">
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="min-h-[44px]">
+                          <SelectValue placeholder="קטגוריה" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(PRODUCT_CATEGORIES).map(([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value.name} {value.icon}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                type="submit"
+                disabled={addItemMutation.isPending}
+                className="mobile-friendly-button w-full sm:w-auto"
+              >
+                <Plus className="ml-1.5 h-4 w-4" />
+                הוסף פריט
+              </Button>
+            </div>
+          </div>
         </div>
       </form>
     </Form>

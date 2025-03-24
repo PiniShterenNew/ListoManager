@@ -162,11 +162,11 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
 
   return (
     <>
-      <div className={`flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm hover:shadow transition-shadow ${isPurchased ? "opacity-70" : ""}`}>
+      <div className={`item-row ${isPurchased ? "opacity-70" : ""}`}>
         <button 
           type="button" 
           onClick={handleToggleStatus}
-          className={`flex-shrink-0 h-5 w-5 rounded-full ${
+          className={`flex-shrink-0 h-6 w-6 rounded-full min-w-[24px] ${
             isPurchased 
               ? "bg-primary border-2 border-primary text-white flex items-center justify-center" 
               : "border-2 border-gray-300 hover:border-primary"
@@ -178,16 +178,19 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
             </svg>
           )}
         </button>
-        <div className="flex-shrink-0 text-xl">{emoji}</div>
-        <div className="flex-grow">
-          <div className={`font-medium ${isPurchased ? "line-through" : ""}`}>{item.name}</div>
-          <div className="text-xs text-gray-500">
+        
+        <div className="flex-shrink-0 text-2xl min-w-[2rem] text-center">{emoji}</div>
+        
+        <div className="flex-grow min-w-0">
+          <div className={`font-medium truncate ${isPurchased ? "line-through" : ""}`}>{item.name}</div>
+          <div className="text-xs text-gray-500 truncate">
             {item.category && PRODUCT_CATEGORIES[categoryKey] 
               ? PRODUCT_CATEGORIES[categoryKey].name 
               : "אחר"}
           </div>
         </div>
-        <div className={`text-sm font-medium ${isPurchased ? "line-through" : ""}`}>
+        
+        <div className={`text-sm font-medium px-2 py-1 bg-gray-50 rounded-md whitespace-nowrap mx-2 ${isPurchased ? "line-through" : ""}`}>
           {item.quantity} {item.unit === "units" ? "יחידות" :
               item.unit === "kg" ? "ק״ג" :
               item.unit === "g" ? "גרם" :
@@ -195,20 +198,27 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
               item.unit === "ml" ? "מ״ל" :
               item.unit === "pack" ? "חבילה" : ""}
         </div>
-        <div className="flex gap-2 items-center">
+        
+        <div className="flex gap-1 sm:gap-2 items-center">
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setIsEditDialogOpen(true)}
-            className="text-gray-400 hover:text-foreground hover:bg-transparent"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditDialogOpen(true);
+            }}
+            className="text-gray-400 hover:text-foreground hover:bg-transparent h-8 w-8 sm:h-9 sm:w-9"
           >
             <Pencil className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="text-gray-400 hover:text-red-500 hover:bg-transparent"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDeleteDialogOpen(true);
+            }}
+            className="text-gray-400 hover:text-red-500 hover:bg-transparent h-8 w-8 sm:h-9 sm:w-9"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
