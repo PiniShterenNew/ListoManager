@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import NavBar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/ui/image-upload";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();

@@ -9,7 +9,7 @@ interface ImageUploadProps {
   className?: string;
 }
 
-export default function ImageUpload({ currentImage, onImageChange, className = "" }: ImageUploadProps) {
+export function ImageUpload({ currentImage, onImageChange, className = "" }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentImage || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

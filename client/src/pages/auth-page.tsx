@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -167,9 +168,17 @@ export default function AuthPage() {
                       name="avatarUrl"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>קישור לתמונת פרופיל (אופציונלי)</FormLabel>
+                          <FormLabel>תמונת פרופיל (אופציונלי)</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://example.com/avatar.jpg" {...field} />
+                            <div className="space-y-4">
+                              <ImageUpload 
+                                currentImage={field.value} 
+                                onImageChange={(imageBase64: string) => {
+                                  field.onChange(imageBase64);
+                                }}
+                                className="mx-auto"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
