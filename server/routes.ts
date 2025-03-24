@@ -294,6 +294,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User routes
+  app.put("/api/users/:id", ensureAuthenticated, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const currentUserId = req.user!.id;
+      
+      // Ensure user can only update their own profile
+      if (userId !== currentUserId) {
+        return res.status(403).json({ message: "אין לך הרשאות לעדכן פרופיל של משתמש אחר" });
+      }
+      
+      // For now we only allow updating the avatar URL
+      const { avatarUrl } = req.body;
+      if (avatarUrl === undefined) {
+        return res.status(400).json({ message: "נדרש ערך לעדכון" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "משתמש לא נמצא" });
+      }
+      
+      // Update user's avatar URL
+      const updatedUser = await storage.updateUser(userId, { avatarUrl });
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "שגיאה בעדכון פרופיל" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
