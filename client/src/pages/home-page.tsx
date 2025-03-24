@@ -28,7 +28,7 @@ export default function HomePage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">הרשימות שלי</h1>
           <div className="hidden md:block">
-            <Button onClick={openNewListModal} className="mobile-friendly-button">
+            <Button onClick={openNewListModal} className="mobile-friendly-button mr-2">
               <Plus className="h-5 w-5 ml-1.5" />
               רשימה חדשה
             </Button>

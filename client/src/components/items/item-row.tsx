@@ -35,10 +35,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { hexToRGBA } from "../utils/hexToRGBA";
 
 interface ItemRowProps {
   item: ListItem;
   listId: number;
+  color: string;
 }
 
 const formSchema = z.object({
@@ -48,7 +50,7 @@ const formSchema = z.object({
   category: z.string().optional(),
 });
 
-export default function ItemRow({ item, listId }: ItemRowProps) {
+export default function ItemRow({ item, listId, color }: ItemRowProps) {
   const { toast } = useToast();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -179,15 +181,15 @@ export default function ItemRow({ item, listId }: ItemRowProps) {
             {item.name}
           </div>
           <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/30"></span>
+            <span style={{background: color}} className="inline-block h-1.5 w-1.5 rounded-full bg-primary/30"></span>
             {item.category && PRODUCT_CATEGORIES[categoryKey] 
               ? PRODUCT_CATEGORIES[categoryKey].name 
               : PRODUCT_CATEGORIES.OTHER.name}
           </div>
         </div>
         
-        <div className={`quantity-badge px-3 whitespace-nowrap mx-2 ${
-          isPurchased ? "line-through bg-green-50 text-green-600" : ""
+        <div style={{background: hexToRGBA(color, 0.2), color: color}} className={`quantity-badge px-3 whitespace-nowrap mx-2 ${
+          isPurchased ? "line-through" : ""
         }`}>
           {item.quantity} {item.unit === "units" ? "יחידות" :
             item.unit === "kg" ? "ק״ג" :

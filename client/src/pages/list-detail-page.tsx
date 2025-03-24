@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { ShoppingList, ListItem, User } from "@shared/schema";
@@ -10,12 +10,12 @@ import ItemForm from "@/components/items/item-form";
 import ItemRow from "@/components/items/item-row";
 import ShareListModal from "@/components/lists/share-list-modal";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronRight, 
-  FilterIcon, 
-  ArrowDownUp, 
-  Edit, 
-  Share2, 
+import {
+  ChevronRight,
+  FilterIcon,
+  ArrowDownUp,
+  Edit,
+  Share2,
   Trash2,
   Loader2,
   Plus
@@ -30,6 +30,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+import EditListModal from "@/components/lists/edit-list-modal";
 
 type FilterType = "all" | "pending" | "purchased";
 
@@ -42,6 +44,9 @@ export default function ListDetailPage() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const listId = parseInt(id || "0");
+  const [sortBy, setSortBy] = useState<"id" | "name" | "category">("id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Fetch list details
   const { data: list, isLoading: isLoadingList } = useQuery<ShoppingList>({
@@ -60,6 +65,26 @@ export default function ListDetailPage() {
     queryKey: [`/api/lists/${listId}/participants`],
     refetchOnWindowFocus: true,
   });
+
+  const filteredItems = useMemo(() => {
+    return items
+      .filter(item => {
+        if (filter === "all") return true;
+        return item.status === filter;
+      })
+      .sort((a, b) => {
+        const aVal = a[sortBy] ?? "";
+        const bVal = b[sortBy] ?? "";
+        return sortOrder === "asc"
+          ? String(aVal).localeCompare(String(bVal))
+          : String(bVal).localeCompare(String(aVal));
+      });
+  }, [items, filter, sortBy, sortOrder]);
+
+  console.log("Items:", items);
+  console.log("Filtered:", filteredItems);
+  console.log("Filter:", filter);
+  console.log("Sort:", sortBy, sortOrder);
 
   // Delete list mutation
   const deleteListMutation = useMutation({
@@ -87,14 +112,6 @@ export default function ListDetailPage() {
     deleteListMutation.mutate();
   };
 
-  // Filter items based on the selected filter
-  const filteredItems = items.filter(item => {
-    if (filter === "all") return true;
-    if (filter === "pending") return item.status === "pending";
-    if (filter === "purchased") return item.status === "purchased";
-    return true;
-  });
-
   // Calculate item counts
   const totalItems = items.length;
   const purchasedItems = items.filter(item => item.status === "purchased").length;
@@ -120,8 +137,8 @@ export default function ListDetailPage() {
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-bold">הרשימה לא נמצאה</h2>
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               onClick={() => setLocation("/")}
               className="mt-4"
             >
@@ -139,9 +156,9 @@ export default function ListDetailPage() {
       <main className="container max-w-4xl mx-auto py-6 px-4"> {/*This line was changed*/}
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation("/")} 
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/")}
               className="mr-2 p-2"
             >
               <ChevronRight className="h-5 w-5" />
@@ -153,7 +170,10 @@ export default function ListDetailPage() {
           )}
           <div className="flex flex-wrap items-center gap-4">
             {list.datePlanned && (
-              <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">
+              <span
+                style={{ backgroundColor: list.color }}
+                className={cn("text-sm px-3 py-1 rounded-full bg-opacity-20 text-white")}
+              >
                 {list.datePlanned}
               </span>
             )}
@@ -161,26 +181,31 @@ export default function ListDetailPage() {
               <span className="text-gray-500 text-sm">משתתפים:</span>
               <div className="flex -space-x-1 space-x-reverse overflow-hidden mr-2">
                 {isLoadingParticipants ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: list.color }} />
                 ) : (
                   <>
-                    <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-white">
+                    <div
+                      style={{ backgroundColor: list.color }}
+                      className={cn(
+                        "h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white bg-opacity-20 text-white"
+                      )}
+                    >
                       {user?.name.charAt(0)}
                     </div>
                     {participants.map((participant) => (
-                      <div 
-                        key={participant.id} 
-                        className="h-6 w-6 rounded-full bg-secondary/40 flex items-center justify-center ring-2 ring-white"
+                      <div
+                        key={participant.id}
+                        className="h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white"
                         title={participant.name}
                       >
                         {participant.name.charAt(0)}
                       </div>
                     ))}
                     {isOwner && (
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-6 w-6 rounded-full p-0 ml-1" 
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6 rounded-full p-0 ml-1"
                         onClick={() => setIsShareModalOpen(true)}
                       >
                         <Plus className="h-3 w-3" />
@@ -194,46 +219,51 @@ export default function ListDetailPage() {
         </div>
 
         {/* Add Item Form */}
-        <ItemForm listId={listId} />
+        <ItemForm listId={listId} color={list.color} />
 
         {/* Filter Controls */}
         <div className="flex items-center justify-between mb-4 border-b border-border pb-4">
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant={filter === "all" ? "default" : "outline"}
-              size="sm"
-              className="rounded-full"
-              onClick={() => setFilter("all")}
-            >
-              הכל ({totalItems})
-            </Button>
-            <Button 
-              variant={filter === "pending" ? "default" : "outline"}
-              size="sm"
-              className="rounded-full"
-              onClick={() => setFilter("pending")}
-            >
-              לרכישה ({pendingItems})
-            </Button>
-            <Button 
-              variant={filter === "purchased" ? "default" : "outline"}
-              size="sm"
-              className="rounded-full"
-              onClick={() => setFilter("purchased")}
-            >
-              נרכשו ({purchasedItems})
-            </Button>
+            {[
+              { label: `הכל (${totalItems})`, value: "all" },
+              { label: `לרכישה (${pendingItems})`, value: "pending" },
+              { label: `נרכשו (${purchasedItems})`, value: "purchased" },
+            ].map(({ label, value }) => (
+              <Button
+                key={value}
+                variant={filter === value ? "default" : "outline"}
+                size="sm"
+                style={{
+                  backgroundColor: filter === value ? list?.color : undefined,
+                  color: filter === value ? "#fff" : undefined, // טקסט לבן כשהכפתור נבחר
+                }}
+                className={cn(
+                  "rounded-full",
+                  filter === value && "bg-opacity-90 text-opacity-100" // opacity מדויק עם Tailwind
+                )}
+                onClick={() => setFilter(value as FilterType)}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" title="מיון">
-              <ArrowDownUp className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSortBy("name")}
+            >
+              מיון לפי שם
             </Button>
-            <Button variant="ghost" size="icon" title="סינון">
-              <FilterIcon className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSortBy("category")}
+            >
+              מיון לפי קטגוריה
             </Button>
           </div>
         </div>
-
         {/* Items List */}
         <div className="space-y-3 mb-8">
           {filteredItems.length === 0 ? (
@@ -242,7 +272,7 @@ export default function ListDetailPage() {
             </div>
           ) : (
             filteredItems.map((item) => (
-              <ItemRow key={item.id} item={item} listId={listId} />
+              <ItemRow key={item.id} item={item} listId={listId} color={list.color} />
             ))
           )}
         </div>
@@ -250,33 +280,38 @@ export default function ListDetailPage() {
         {/* List Settings */}
         <div className="border-t border-border pt-6">
           <h3 className="text-lg font-semibold mb-4">הגדרות רשימה</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button variant="outline" className="justify-start">
-              <Edit className="mr-2 h-4 w-4" />
-              <span>ערוך רשימה</span>
+          <div className="">
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Edit className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start"
               onClick={() => setIsShareModalOpen(true)}
               disabled={!isOwner}
             >
-              <Share2 className="mr-2 h-4 w-4" />
-              <span>שתף רשימה</span>
+              <Share2 className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start text-red-500 hover:text-red-700 hover:bg-red-50"
               onClick={() => setIsDeleteDialogOpen(true)}
               disabled={!isOwner}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>מחק רשימה</span>
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </main>
-
+      <EditListModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        list={list}
+      />
       {/* Share List Modal */}
       <ShareListModal
         isOpen={isShareModalOpen}
@@ -296,7 +331,7 @@ export default function ListDetailPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>ביטול</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteList}
               className="bg-red-500 hover:bg-red-600"
             >

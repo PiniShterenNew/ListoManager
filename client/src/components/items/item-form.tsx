@@ -15,9 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { PRODUCT_CATEGORIES } from "@shared/schema";
+import { cn } from "@/lib/utils";
 
 interface ItemFormProps {
   listId: number;
+  color: string; // הוספת ה-prrop של צבע HEX
 }
 
 const formSchema = z.object({
@@ -27,7 +29,7 @@ const formSchema = z.object({
   category: z.string().optional(),
 });
 
-export default function ItemForm({ listId }: ItemFormProps) {
+export default function ItemForm({ listId, color }: ItemFormProps) {
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,6 +48,7 @@ export default function ItemForm({ listId }: ItemFormProps) {
         ...data,
         listId,
         status: "pending",
+        color, // הוספת הצבע לפריט
       });
       return await response.json();
     },
@@ -79,15 +82,21 @@ export default function ItemForm({ listId }: ItemFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8">
         <div className="card mb-4 relative bg-white/90 backdrop-blur-sm">
-          <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-t-lg"></div>
-          
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mr-3">
-              <Plus className="h-5 w-5 text-primary" />
+          <div
+            className="absolute top-0 left-0 h-1 w-full rounded-t-lg"
+            style={{ backgroundColor: color }} // שימוש בצבע ה-HEX
+          />
+
+          <div className="flex items-center mb-4 gap-3">
+            <div
+              style={{ backgroundColor: color }}
+              className="w-10 h-10 rounded-md flex items-center justify-center mr-3 bg-opacity-10"
+            >
+              <Plus className="h-5 w-5 text-white" /> {/* צבע ה-Plus */}
             </div>
-            <h3 className="text-lg font-medium">הוסף פריט חדש</h3>
+            <h3 className="text-lg font-medium ">הוסף פריט חדש</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <FormField
@@ -98,7 +107,8 @@ export default function ItemForm({ listId }: ItemFormProps) {
                     <FormControl>
                       <Input 
                         placeholder="הוסף פריט חדש, לדוג׳: חלב"
-                        className="min-h-[44px] border-primary/20 focus:border-primary"
+                        className="min-h-[44px]"
+                        style={{ borderColor: color }} // גבול בצבע ה-HEX
                         {...field} 
                       />
                     </FormControl>
@@ -116,7 +126,8 @@ export default function ItemForm({ listId }: ItemFormProps) {
                         type="number" 
                         placeholder="כמות" 
                         min="1"
-                        className="min-h-[44px] border-primary/20 focus:border-primary"
+                        className="min-h-[44px]"
+                        style={{ borderColor: color }} // גבול בצבע ה-HEX
                         {...field} 
                       />
                     </FormControl>
@@ -136,7 +147,10 @@ export default function ItemForm({ listId }: ItemFormProps) {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="min-h-[44px] border-primary/20 focus:border-primary">
+                        <SelectTrigger
+                          className="min-h-[44px]"
+                          style={{ borderColor: color }} // גבול בצבע ה-HEX
+                        >
                           <SelectValue placeholder="יחידה" />
                         </SelectTrigger>
                       </FormControl>
@@ -163,7 +177,10 @@ export default function ItemForm({ listId }: ItemFormProps) {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="min-h-[44px] border-primary/20 focus:border-primary">
+                        <SelectTrigger
+                          className="min-h-[44px]"
+                          style={{ borderColor: color }} // גבול בצבע ה-HEX
+                        >
                           <SelectValue placeholder="קטגוריה" />
                         </SelectTrigger>
                       </FormControl>
@@ -186,8 +203,10 @@ export default function ItemForm({ listId }: ItemFormProps) {
             <div className="pt-2">
               <Button 
                 type="submit"
+                color={color} // צבע ה-HEX
                 disabled={addItemMutation.isPending}
-                className="mobile-friendly-button w-full md:w-auto"
+                className="w-full md:w-auto"
+                style={{ backgroundColor: color, borderColor: color }} // רקע וכפתור בצבע ה-HEX
               >
                 <Plus className="ml-1.5 h-4 w-4" />
                 {addItemMutation.isPending ? "מוסיף פריט..." : "הוסף פריט"}

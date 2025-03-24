@@ -50,7 +50,7 @@ export const shoppingLists = pgTable("shopping_lists", {
   description: text("description"),
   datePlanned: text("date_planned"),
   ownerId: integer("owner_id").notNull(),
-  color: text("color").default("green"),
+  color: text("color").default("#22c55e"),
 });
 
 export const insertShoppingListSchema = createInsertSchema(shoppingLists).pick({
@@ -58,6 +58,7 @@ export const insertShoppingListSchema = createInsertSchema(shoppingLists).pick({
   description: true,
   datePlanned: true,
   ownerId: true,
+  color: true,
 });
 
 export const LIST_COLORS = {
@@ -83,6 +84,7 @@ export const listItems = pgTable("list_items", {
   category: text("category").$type<ProductCategory>(),
   status: text("status").notNull().default("pending"),
   listId: integer("list_id").notNull(),
+  color: text("color").default("#22c55e"),
 });
 
 export const insertListItemSchema = createInsertSchema(listItems).pick({
@@ -92,6 +94,7 @@ export const insertListItemSchema = createInsertSchema(listItems).pick({
   category: true,
   status: true,
   listId: true,
+  color: true,
 });
 
 export type ListItem = typeof listItems.$inferSelect;
