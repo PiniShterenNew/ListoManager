@@ -105,7 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData = { 
         name: req.body.name,
         description: req.body.description || null,
-        datePlanned: datePlanned,
+        datePlanned: req.body.datePlanned,
+        timePlanned: req.body.timePlanned, // הוספת השדה החדש
         color: req.body.color
       };
   
@@ -333,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // For now we only allow updating the avatar URL
-      const { avatarUrl } = req.body;
+      const { avatarUrl, name } = req.body;
       if (avatarUrl === undefined) {
         return res.status(400).json({ message: "נדרש ערך לעדכון" });
       }
@@ -344,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update user's avatar URL
-      const updatedUser = await storage.updateUser(userId, { avatarUrl });
+      const updatedUser = await storage.updateUser(userId, { avatarUrl, name });
       
       // Return user without password
       const { password, ...userWithoutPassword } = updatedUser;

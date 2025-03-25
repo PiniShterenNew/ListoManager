@@ -35,9 +35,9 @@ interface NewListModalProps {
 const formSchema = z.object({
   name: z.string().min(3, { message: "שם הרשימה חייב להכיל לפחות 3 תווים" }),
   description: z.string().optional(),
-  datePlanned: z.string().optional(),
-  timePlanned: z.string().optional(), // ✅ חדש
-  color: z.string().optional().default("bg-green-500"),
+  datePlanned: z.string(),
+  timePlanned: z.string(),
+  color: z.string().optional().default("#22c55e"),
 });
 
 type FormValues = z.infer<typeof formSchema>;

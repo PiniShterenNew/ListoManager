@@ -32,7 +32,7 @@ export default function ListCard({ list }: ListCardProps) {
 
   return (
     <div
-      className="card hover-lift glow-card border cursor-pointer"
+      className="card w-full hover-lift glow-card border cursor-pointer"
       onClick={handleClick}
     >
       <div className="flex justify-between items-start mb-4">
@@ -44,7 +44,7 @@ export default function ListCard({ list }: ListCardProps) {
 
         {formattedDate && (
           <span className={"text-xs px-2.5 py-1 rounded-full whitespace-nowrap font-medium"} style={{ backgroundColor: hexToRGBA(list.color, 0.1) }}>
-            {formattedDate}
+            {formattedDate} {list.timePlanned && `${list.timePlanned}`}
           </span>
         )}
       </div>

@@ -80,7 +80,7 @@ export default function ItemForm({ listId, color }: ItemFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8 ">
         <div className="card mb-4 relative bg-white/90 backdrop-blur-sm">
           <div
             className="absolute top-0 left-0 h-1 w-full rounded-t-lg"
@@ -136,12 +136,12 @@ export default function ItemForm({ listId, color }: ItemFormProps) {
               />
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 ">
               <FormField
                 control={form.control}
                 name="unit"
                 render={({ field }) => (
-                  <FormItem className="w-full sm:w-1/3">
+                  <FormItem className="w-full sm:w-1/3 ">
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}

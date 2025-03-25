@@ -49,6 +49,7 @@ export const shoppingLists = pgTable("shopping_lists", {
   name: text("name").notNull(),
   description: text("description"),
   datePlanned: text("date_planned"),
+  timePlanned: text("time_planned"), // הוספת השדה החדש
   ownerId: integer("owner_id").notNull(),
   color: text("color").default("#22c55e"),
 });
@@ -57,6 +58,7 @@ export const insertShoppingListSchema = createInsertSchema(shoppingLists).pick({
   name: true,
   description: true,
   datePlanned: true,
+  timePlanned: true, // הוספת השדה החדש
   ownerId: true,
   color: true,
 });

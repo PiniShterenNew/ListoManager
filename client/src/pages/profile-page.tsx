@@ -11,28 +11,31 @@ export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(user.name);
+  const [editedAvatar, setEditedAvatar] = useState(user.avatarUrl || "");
 
-  const updateAvatarMutation = useMutation({
-    mutationFn: async (avatarUrl: string) => {
+  const updateProfileMutation = useMutation({
+    mutationFn: async ({ avatarUrl, name }: { avatarUrl: string; name: string }) => {
       if (!user) throw new Error("User not authenticated");
-      
+
       const response = await apiRequest("PUT", `/api/users/${user.id}`, {
-        avatarUrl
+        name,
+        avatarUrl,
       });
-      
+
       return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
-        title: "תמונת פרופיל עודכנה",
-        description: "התמונה עודכנה בהצלחה",
+        title: "הפרופיל עודכן",
+        description: "הפרטים נשמרו בהצלחה",
       });
       setIsEditing(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "שגיאה בעדכון תמונה",
+        title: "שגיאה בעדכון הפרופיל",
         description: error.message,
         variant: "destructive",
       });
@@ -44,7 +47,7 @@ export default function ProfilePage() {
   };
 
   const handleImageChange = (imageBase64: string) => {
-    updateAvatarMutation.mutate(imageBase64);
+    setEditedAvatar(imageBase64);
   };
 
   if (!user) return null;
@@ -63,7 +66,16 @@ export default function ProfilePage() {
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">שם מלא</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user.name}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    user.name
+                  )}
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -83,16 +95,16 @@ export default function ProfilePage() {
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   {isEditing ? (
                     <div className="flex flex-col">
-                      <ImageUpload 
-                        currentImage={user.avatarUrl} 
+                      <ImageUpload
+                        currentImage={user.avatarUrl}
                         onImageChange={handleImageChange}
                       />
-                      
+
                       <div className="flex gap-2 mt-4">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           onClick={() => setIsEditing(false)}
-                          disabled={updateAvatarMutation.isPending}
+                          disabled={updateProfileMutation.isPending}
                         >
                           ביטול
                         </Button>
@@ -101,37 +113,65 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center">
                       {user.avatarUrl ? (
-                        <img 
-                          className="h-16 w-16 rounded-full object-cover" 
-                          src={user.avatarUrl} 
-                          alt={user.name} 
+                        <img
+                          className="h-16 w-16 rounded-full object-cover"
+                          src={user.avatarUrl}
+                          alt={user.name}
                         />
                       ) : (
                         <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-semibold">
                           {user.name.charAt(0)}
                         </div>
                       )}
-                      <Button 
-                        variant="outline" 
-                        className="mr-4"
-                        onClick={() => setIsEditing(true)}
-                      >
-                        שנה תמונה
-                      </Button>
                     </div>
                   )}
                 </dd>
               </div>
             </dl>
           </div>
-          <div className="px-4 py-3 bg-gray-50 text-left sm:px-6">
-            <Button 
-              variant="destructive" 
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-            >
-              {logoutMutation.isPending ? "מתנתק..." : "התנתק"}
-            </Button>
+          <div className="px-4 py-3 bg-gray-50 text-left sm:px-6 flex gap-2 justify-between">
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                  disabled={updateProfileMutation.isPending}
+                >
+                  ביטול
+                </Button>
+
+                <Button
+                  onClick={() => updateProfileMutation.mutate({ avatarUrl: editedAvatar, name: editedName })}
+                  disabled={
+                    updateProfileMutation.isPending ||
+                    (editedName === user.name && editedAvatar === (user.avatarUrl || ""))
+                  }
+                >
+                  {updateProfileMutation.isPending ? "שומר..." : "שמור שינויים"}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  className="mr-4"
+                  onClick={() => {
+                    setEditedName(user.name);
+                    setEditedAvatar(user.avatarUrl || "");
+                    setIsEditing(true);
+                  }}
+                >
+                  ערוך
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                >
+                  {logoutMutation.isPending ? "מתנתק..." : "התנתק"}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </main>

@@ -24,8 +24,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
-      <main className="flex-grow page-container">
-        <div className="flex justify-between items-center mb-6">
+      <main className="flex-grow page-container w-full">
+        <div className="flex flex-col justify-between items-center mb-6 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">הרשימות שלי</h1>
           <div className="hidden md:block">
             <Button onClick={openNewListModal} className="mobile-friendly-button mr-2">
@@ -44,7 +44,7 @@ export default function HomePage() {
             <p className="text-red-500">שגיאה בטעינת הרשימות. אנא נסה שוב.</p>
           </div>
         ) : lists && lists.length > 0 ? (
-          <div className="grid-layout">
+          <div className="flex flex-col gap-4 w-full">
             {lists.map((list) => (
               <ListCard key={list.id} list={list} />
             ))}

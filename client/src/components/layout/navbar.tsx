@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Plus, Menu } from "lucide-react";
 
@@ -43,9 +43,9 @@ export default function NavBar() {
               </div>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8 sm:space-x-reverse">
-              <Button 
-                variant="link" 
-                onClick={() => setLocation("/")} 
+              <Button
+                variant="link"
+                onClick={() => setLocation("/")}
                 className="text-foreground font-medium"
               >
                 הרשימות שלי
@@ -54,7 +54,7 @@ export default function NavBar() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex">
-              <Button 
+              <Button
                 onClick={() => setLocation("/")}
                 className="mobile-friendly-button"
                 size="sm"
@@ -67,38 +67,54 @@ export default function NavBar() {
               <div className="relative ml-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="relative rounded-full p-0 h-9 w-9 border-2 hover:border-primary/50 overflow-hidden"
-                    >
-                      {user?.avatarUrl ? (
-                        <img
-                          className="h-full w-full object-cover"
-                          src={user.avatarUrl}
-                          alt={user.name}
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                          {user?.name.charAt(0)}
-                        </div>
-                      )}
-                    </Button>
+                    <button className="flex items-center gap-2 px-2 py-1 hover:font-black transition-colors">
+                    <span className="text-sm font-medium text-gray-800">{user?.name}</span>
+                      <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-gray-200">
+                        {user?.avatarUrl ? (
+                          <img
+                            className="h-full w-full object-cover"
+                            src={user.avatarUrl}
+                            alt={user.name}
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                            {user?.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                    </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+
+                  <DropdownMenuContent  align="center" className="w-48 space-y-1 rtl:text-right">
+                    <div className="flex justify-center items-center gap-2 p-3">
+                      <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-gray-200">
+                        {user?.avatarUrl ? (
+                          <img
+                            className="h-full w-full object-cover"
+                            src={user.avatarUrl}
+                            alt={user.name}
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                            {user?.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
                       {user?.name}
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => setLocation("/profile")}
-                      className="cursor-pointer"
+                      className="cursor-pointer rtl:text-right"
                     >
                       הפרופיל שלי
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={handleLogout} 
-                      className="cursor-pointer text-red-500 focus:text-red-500"
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer text-red-500 focus:text-red-500 rtl:text-right"
                     >
                       התנתק
                     </DropdownMenuItem>
@@ -107,9 +123,9 @@ export default function NavBar() {
               </div>
             </div>
             <div className="flex items-center sm:hidden">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleMobileMenu}
                 className="rounded-full h-9 w-9"
               >
@@ -124,8 +140,8 @@ export default function NavBar() {
       {isMobileMenuOpen && (
         <div className="sm:hidden absolute top-16 left-0 right-0 bg-white shadow-lg z-50">
           <div className="space-y-1 p-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="block w-full text-right px-4 py-2 rounded-md min-h-[44px]"
               onClick={() => {
                 setLocation("/");
@@ -156,8 +172,8 @@ export default function NavBar() {
               </div>
             </div>
             <div className="mt-4 space-y-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="block w-full text-right px-4 py-2 rounded-md min-h-[44px]"
                 onClick={() => {
                   setLocation("/profile");
@@ -166,8 +182,8 @@ export default function NavBar() {
               >
                 הפרופיל שלי
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="block w-full text-right px-4 py-2 rounded-md text-red-500 hover:text-red-600 min-h-[44px]"
                 onClick={handleLogout}
               >
@@ -177,11 +193,11 @@ export default function NavBar() {
           </div>
         </div>
       )}
-      
+
       {/* Bottom mobile navigation bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)] rounded-t-lg z-50 p-2 sm:hidden">
         <div className="flex justify-center">
-          <Button 
+          <Button
             onClick={() => setLocation("/")}
             className="mobile-friendly-button w-full"
             size="sm"

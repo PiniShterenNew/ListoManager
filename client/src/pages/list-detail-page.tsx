@@ -174,45 +174,103 @@ export default function ListDetailPage() {
                 style={{ backgroundColor: list.color }}
                 className={cn("text-sm px-3 py-1 rounded-full bg-opacity-20 text-white")}
               >
-                {list.datePlanned}
+                {list.datePlanned} {list.timePlanned}
               </span>
             )}
-            <div className="flex items-center">
-              <span className="text-gray-500 text-sm">משתתפים:</span>
-              <div className="flex -space-x-1 space-x-reverse overflow-hidden mr-2">
-                {isLoadingParticipants ? (
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: list.color }} />
-                ) : (
-                  <>
+            <div className="flex flex-col space-y-4">
+              {/* תצוגת בעל הרשימה */}
+              <div className="flex items-center">
+                <span className="text-gray-500 text-sm ml-2">בעלים:</span>
+                <div className="mr-2">
+                  {isLoadingList ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
                     <div
-                      style={{ backgroundColor: list.color }}
                       className={cn(
-                        "h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white bg-opacity-20 text-white"
+                        "h-8 w-8 rounded-full flex items-center justify-center ring-2 ring-white shadow-md",
+                        list.ownerAvatarUrl ? "bg-transparent" : "bg-primary text-primary-foreground"
                       )}
+                      title={list.ownerName || "בעלים"}
                     >
-                      {user?.name.charAt(0)}
+                      {list.ownerAvatarUrl ? (
+                        <img
+                          src={list.ownerAvatarUrl}
+                          alt={list.ownerName}
+                          className="h-full w-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium">
+                          {list.ownerName?.charAt(0) || "O"}
+                        </span>
+                      )}
                     </div>
-                    {participants.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white"
-                        title={participant.name}
-                      >
-                        {participant.name.charAt(0)}
-                      </div>
-                    ))}
-                    {isOwner && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6 rounded-full p-0 ml-1"
-                        onClick={() => setIsShareModalOpen(true)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </>
+                  )}
+                </div>
+                {/* שם בעל הרשימה */}
+                {!isLoadingList && (
+                  <span className="text-sm">
+                    {list.ownerName || ""}
+                    {list.ownerId === user?.id && " (אתה)"}
+                  </span>
                 )}
+              </div>
+
+              {/* תצוגת משתתפים */}
+              <div className="flex items-center">
+                <span className="text-gray-500 text-sm ml-2">משתתפים:</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {isLoadingParticipants ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
+                    <>
+                      {/* סינון משתתפים - להציג רק משתתפים שאינם המשתמש הנוכחי ואינם בעל הרשימה */}
+                      {participants
+                        .filter(participant => participant.id !== user?.id && participant.id !== list.ownerId)
+                        .map((participant) => (
+                          <div key={participant.id} className="flex items-center">
+                            <div
+                              className={cn(
+                                "h-8 w-8 rounded-full flex items-center justify-center ring-2 ring-white shadow-md mr-1",
+                                participant.avatarUrl ? "bg-transparent" : "bg-primary text-primary-foreground"
+                              )}
+                              title={participant.name}
+                            >
+                              {participant.avatarUrl ? (
+                                <img
+                                  src={participant.avatarUrl}
+                                  alt={participant.name}
+                                  className="h-full w-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-sm font-medium">{participant.name.charAt(0)}</span>
+                              )}
+                            </div>
+                            <span className="text-sm">{participant.name}</span>
+                          </div>
+                        ))}
+
+                      {/* כפתור הוספת משתתפים - יוצג רק לבעל הרשימה */}
+                      {isOwner && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-full shadow-sm"
+                          onClick={() => setIsShareModalOpen(true)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      )}
+
+                      {/* אם אין משתתפים אחרים, הצג הודעה */}
+                      {participants.filter(participant =>
+                        participant.id !== user?.id &&
+                        participant.id !== list.ownerId
+                      ).length === 0 && (
+                          <span className="text-sm text-muted-foreground">אין משתתפים נוספים</span>
+                        )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -222,7 +280,7 @@ export default function ListDetailPage() {
         <ItemForm listId={listId} color={list.color} />
 
         {/* Filter Controls */}
-        <div className="flex items-center justify-between mb-4 border-b border-border pb-4">
+        <div className="flex items-center justify-between mb-4 border-b border-border pb-4 !rtl:space-x-reverse">
           <div className="flex flex-wrap gap-2">
             {[
               { label: `הכל (${totalItems})`, value: "all" },
@@ -280,7 +338,7 @@ export default function ListDetailPage() {
         {/* List Settings */}
         <div className="border-t border-border pt-6">
           <h3 className="text-lg font-semibold mb-4">הגדרות רשימה</h3>
-          <div className="">
+          <div className="flex gap-3">
             <Button
               variant="outline"
               className="justify-start"

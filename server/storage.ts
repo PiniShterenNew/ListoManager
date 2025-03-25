@@ -61,6 +61,7 @@ export class SQLiteStorage implements IStorage {
         name TEXT NOT NULL,
         description TEXT,
         datePlanned TEXT,
+        timePlanned TEXT,
         ownerId INTEGER NOT NULL,
         color TEXT DEFAULT 'bg-green-500'
       );
@@ -118,8 +119,25 @@ export class SQLiteStorage implements IStorage {
 
   // Shopping List methods
   async getListById(id: number): Promise<ShoppingList | undefined> {
-    const row = this.db.prepare("SELECT * FROM shopping_lists WHERE id = ?").get(id);
-    return row as ShoppingList | undefined;
+    try {
+      // קבל את הרשימה
+      const list = this.db.prepare("SELECT * FROM shopping_lists WHERE id = ?").get(id);
+      if (!list) return undefined;
+      
+      // קבל מידע על בעל הרשימה
+      const owner = this.db.prepare("SELECT id, name, avatarUrl FROM users WHERE id = ?").get(list.ownerId);
+      if (!owner) return list as ShoppingList;
+      
+      // הוסף את פרטי בעל הרשימה
+      return {
+        ...list,
+        ownerName: owner.name,
+        ownerAvatarUrl: owner.avatarUrl
+      } as ShoppingList;
+    } catch (error) {
+      console.error("Error in getListById:", error);
+      throw error;
+    }
   }
 
   async getUserLists(userId: number): Promise<ShoppingList[]> {
@@ -248,12 +266,28 @@ export class SQLiteStorage implements IStorage {
 
   // List Participants methods
   async getListParticipants(listId: number): Promise<User[]> {
-    const participants = this.db.prepare(`
-      SELECT u.* FROM users u
-      JOIN list_participants lp ON u.id = lp.userId
-      WHERE lp.listId = ?
-    `).all(listId);
-    return participants as User[];
+    try {
+      // קבל את הרשימה כדי לדעת מיהו בעל הרשימה
+      const list = await this.getListById(listId);
+      if (!list) return [];
+      
+      // קבל את כל המשתתפים
+      const participants = this.db.prepare(`
+        SELECT u.* FROM users u
+        JOIN list_participants lp ON u.id = lp.userId
+        WHERE lp.listId = ?
+      `).all(listId) as User[];
+      
+      // אופציה: החזר את כל המשתתפים, הסינון ייעשה בצד הלקוח
+      return participants;
+      
+      /* אופציה נוספת: סנן את בעל הרשימה בצד השרת
+      return participants.filter(user => user.id !== list.ownerId);
+      */
+    } catch (error) {
+      console.error("Error in getListParticipants:", error);
+      throw error;
+    }
   }
 
   async isListSharedWithUser(listId: number, userId: number): Promise<boolean> {

@@ -36,10 +36,10 @@ interface EditListModalProps {
 const formSchema = z.object({
     name: z.string().min(3, { message: "שם הרשימה חייב להכיל לפחות 3 תווים" }),
     description: z.string().optional(),
-    datePlanned: z.string().optional(),
-    timePlanned: z.string().optional(), // ✅ חדש
-    color: z.string().optional().default("bg-green-500"),
-});
+    datePlanned: z.string(), 
+    timePlanned: z.string(), 
+    color: z.string().optional().default("#22c55e"),
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -71,10 +71,13 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
             name: list.name,
             description: list.description ?? "",
             datePlanned: list.datePlanned ?? new Date().toISOString().split('T')[0],
-            timePlanned: new Date().toTimeString().slice(0, 5), // 🕒 פורמט HH:MM
+            timePlanned: list.timePlanned ?? new Date().toTimeString().slice(0, 5), // 🕒 פורמט HH:MM
             color: list.color ?? "#22c55e",
         },
     });
+
+    console.log(list);
+    
 
     const scheduleNotification = () => {
         const notifyTime = new Date(`${form.getValues("datePlanned")}T${form.getValues("timePlanned")}`);
