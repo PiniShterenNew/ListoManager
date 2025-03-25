@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -48,6 +48,23 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
     const { toast } = useToast();
     const [, setLocation] = useLocation();
 
+    useEffect(() => {
+        // בדיקה האם התראות נתמכות בדפדפן
+        if (!("Notification" in window)) {
+            console.log("דפדפן זה אינו תומך בהתראות");
+            return;
+        }
+
+        // בקשת הרשאה להתראות אם עוד לא ניתנה
+        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+            try {
+                Notification.requestPermission();
+            } catch (e) {
+                console.error("שגיאה בבקשת הרשאה להתראות:", e);
+            }
+        }
+    }, []);
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -58,6 +75,27 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
             color: list.color ?? "#22c55e",
         },
     });
+
+    const scheduleNotification = () => {
+        const notifyTime = new Date(`${form.getValues("datePlanned")}T${form.getValues("timePlanned")}`);
+        const now = new Date();
+        const timeout = notifyTime.getTime() - now.getTime();
+
+        // רק אם יש הרשאה וזמן ההתראה בעתיד
+        if (Notification.permission === "granted" && timeout > 0) {
+            setTimeout(() => {
+                try {
+                    new Notification("📢 הגיע הזמן להתחיל את הקנייה!", {
+                        body: `רשימת "${form.getValues("name")}" מחכה לך`,
+                        icon: "/generated-icon.png", // הוספת אייקון להתראה
+                        tag: `shopping-list-${list.id}` // מניעת התראות כפולות
+                    });
+                } catch (e) {
+                    console.error("שגיאה ביצירת התראה:", e);
+                }
+            }, timeout);
+        }
+    };
 
     const updateListMutation = useMutation({
         mutationFn: async (data: FormValues) => {
@@ -73,6 +111,9 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
                 title: "הרשימה עודכנה",
                 description: "הרשימה נשמרה בהצלחה",
             });
+
+            scheduleNotification();
+
             form.reset(data);
             onClose();
         },
@@ -94,7 +135,7 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>רשימה חדשה</DialogTitle>
+                    <DialogTitle>עריכת הרשימה</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -198,7 +239,7 @@ export default function EditListModal({ isOpen, onClose, list }: EditListModalPr
                                 type="submit"
                                 disabled={updateListMutation.isPending}
                             >
-                                {updateListMutation.isPending ? "יוצר רשימה..." : "צור רשימה"}
+                                {updateListMutation.isPending ? "הרשימה מתעדכנת..." : "עדכן רשימה"}
                             </Button>
                         </DialogFooter>
                     </form>

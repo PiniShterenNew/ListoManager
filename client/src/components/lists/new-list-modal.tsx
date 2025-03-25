@@ -58,6 +58,44 @@ export default function NewListModal({ isOpen, onClose }: NewListModalProps) {
     },
   });
 
+  useEffect(() => {
+    // בדיקה האם התראות נתמכות בדפדפן
+    if (!("Notification" in window)) {
+      console.log("דפדפן זה אינו תומך בהתראות");
+      return;
+    }
+
+    // בקשת הרשאה להתראות אם עוד לא ניתנה
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+      try {
+        Notification.requestPermission();
+      } catch (e) {
+        console.error("שגיאה בבקשת הרשאה להתראות:", e);
+      }
+    }
+  }, []);
+
+  const scheduleNotification = () => {
+    const notifyTime = new Date(`${form.getValues("datePlanned")}T${form.getValues("timePlanned")}`);
+    const now = new Date();
+    const timeout = notifyTime.getTime() - now.getTime();
+
+    // רק אם יש הרשאה וזמן ההתראה בעתיד
+    if (Notification.permission === "granted" && timeout > 0) {
+      setTimeout(() => {
+        try {
+          new Notification("📢 הגיע הזמן להתחיל את הקנייה!", {
+            body: `רשימת "${form.getValues("name")}" מחכה לך`,
+            icon: "/generated-icon.png", // הוספת אייקון להתראה
+            tag: `shopping-list-${data.id}` // מניעת התראות כפולות
+          });
+        } catch (e) {
+          console.error("שגיאה ביצירת התראה:", e);
+        }
+      }, timeout);
+    }
+  };
+
   const createListMutation = useMutation({
     mutationFn: async (data: FormValues) => {
       if (!user) throw new Error("User not authenticated");
@@ -78,17 +116,7 @@ export default function NewListModal({ isOpen, onClose }: NewListModalProps) {
         description: "הרשימה נוצרה בהצלחה",
       });
 
-      // ✅ תזמון ההתראה לפי תאריך ושעה
-      const notifyTime = new Date(`${form.getValues("datePlanned")}T${form.getValues("timePlanned")}`);
-      const timeout = notifyTime.getTime() - Date.now();
-
-      if (Notification.permission === "granted" && timeout > 0) {
-        setTimeout(() => {
-          new Notification("📢 הגיע הזמן להתחיל את הקנייה!", {
-            body: `רשימת "${form.getValues("name")}" מחכה לך`,
-          });
-        }, timeout);
-      }
+      scheduleNotification();
 
       form.reset();
       onClose();
@@ -103,12 +131,6 @@ export default function NewListModal({ isOpen, onClose }: NewListModalProps) {
       });
     },
   });
-
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission !== "granted") {
-      Notification.requestPermission();
-    }
-  }, []);
 
   const onSubmit = (data: FormValues) => {
     createListMutation.mutate(data);

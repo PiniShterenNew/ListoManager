@@ -74,27 +74,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/lists/:id", ensureAuthenticated, async (req, res) => {
+    console.log("PUT /api/lists/:id - Request received");
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+    console.log("User:", req.user);
+  
     try {
       const listId = parseInt(req.params.id);
       const userId = req.user!.id;
       
+      console.log(`Attempting to update list ${listId} for user ${userId}`);
+      
       // Check if user is the owner of this list
       const list = await storage.getListById(listId);
       if (!list) {
+        console.error(`List with id ${listId} not found`);
         return res.status(404).json({ message: "רשימה לא נמצאה" });
       }
       
       if (list.ownerId !== userId) {
+        console.error(`User ${userId} is not the owner of list ${listId}`);
         return res.status(403).json({ message: "רק בעל הרשימה יכול לערוך אותה" });
       }
       
-      const updatedList = await storage.updateList(listId, req.body);
+      // Combine datePlanned and timePlanned if both exist
+      const datePlanned = req.body.timePlanned 
+        ? `${req.body.datePlanned} ${req.body.timePlanned}` 
+        : req.body.datePlanned;
+  
+      // Remove timePlanned before update
+      const updateData = { 
+        name: req.body.name,
+        description: req.body.description || null,
+        datePlanned: datePlanned,
+        color: req.body.color
+      };
+  
+      console.log("Prepared update data:", JSON.stringify(updateData, null, 2));
+      
+      const updatedList = await storage.updateList(listId, updateData);
+      console.log("List updated successfully:", JSON.stringify(updatedList, null, 2));
+      
       res.json(updatedList);
     } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "נתונים לא תקינים", errors: error.errors });
-      }
-      res.status(500).json({ message: "שגיאה בעדכון רשימה" });
+      console.error("Full error in list update:", error);
+      res.status(500).json({ 
+        message: "שגיאה בעדכון רשימה", 
+        details: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   });
 

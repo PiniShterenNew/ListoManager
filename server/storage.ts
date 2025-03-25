@@ -141,10 +141,47 @@ export class SQLiteStorage implements IStorage {
   }
 
   async updateList(id: number, data: Partial<ShoppingList>): Promise<ShoppingList> {
-    const updates = Object.entries(data).map(([key]) => `${key} = ?`).join(", ");
-    const values = Object.values(data);
-    this.db.prepare(`UPDATE shopping_lists SET ${updates} WHERE id = ?`).run(...values, id);
-    return (await this.getListById(id))!;
+    console.log("updateList - Start");
+    console.log("Incoming data:", JSON.stringify(data, null, 2));
+  
+    try {
+      // ודא שהרשימה קיימת
+      const list = this.db.prepare("SELECT * FROM shopping_lists WHERE id = ?").get(id);
+      if (!list) {
+        console.error(`List with id ${id} not found`);
+        throw new Error(`List with id ${id} not found`);
+      }
+  
+      // בנה את שאילתת העדכון רק אם יש שדות לעדכון
+      const validFields = ['name', 'description', 'datePlanned', 'color'];
+      const updateEntries = Object.entries(data)
+        .filter(([key, _]) => validFields.includes(key) && key !== undefined);
+  
+      console.log("Update entries:", JSON.stringify(updateEntries, null, 2));
+      
+      if (updateEntries.length === 0) {
+        console.warn("No valid fields to update");
+        return list as ShoppingList;
+      }
+      
+      const updates = updateEntries.map(([key]) => `${key} = ?`).join(", ");
+      const values = updateEntries.map(([_, value]) => value);
+      
+      console.log("SQL update:", `UPDATE shopping_lists SET ${updates} WHERE id = ?`);
+      console.log("Update values:", values);
+      
+      // בצע את העדכון
+      this.db.prepare(`UPDATE shopping_lists SET ${updates} WHERE id = ?`).run(...values, id);
+      
+      // קבל את הרשימה המעודכנת
+      const updatedList = this.db.prepare("SELECT * FROM shopping_lists WHERE id = ?").get(id);
+      console.log("Updated list:", JSON.stringify(updatedList, null, 2));
+      
+      return updatedList as ShoppingList;
+    } catch (error) {
+      console.error("Detailed error in updateList:", error);
+      throw error;
+    }
   }
 
   async deleteList(id: number): Promise<void> {
@@ -183,10 +220,26 @@ export class SQLiteStorage implements IStorage {
   }
 
   async updateListItem(id: number, data: Partial<ListItem>): Promise<ListItem> {
+    // בדיקה שהפריט קיים לפני העדכון
+    const item = this.db.prepare("SELECT * FROM list_items WHERE id = ?").get(id);
+    if (!item) {
+      throw new Error(`Item with id ${id} not found`);
+    }
+    
+    // שמירת ה-listId לפני העדכון כדי להשתמש בו אחר כך
+    const listId = item.listId;
+    
+    // עדכון הפריט
     const updates = Object.entries(data).map(([key]) => `${key} = ?`).join(", ");
     const values = Object.values(data);
-    this.db.prepare(`UPDATE list_items SET ${updates} WHERE id = ?`).run(...values, id);
-    return (await this.getListItems(id))[0] as ListItem;
+    
+    if (updates.length > 0) {
+      this.db.prepare(`UPDATE list_items SET ${updates} WHERE id = ?`).run(...values, id);
+    }
+    
+    // בדיקה ספציפית שמחזירה את הפריט המעודכן
+    const updatedItem = this.db.prepare("SELECT * FROM list_items WHERE id = ?").get(id);
+    return updatedItem as ListItem;
   }
 
   async deleteListItem(id: number): Promise<void> {
